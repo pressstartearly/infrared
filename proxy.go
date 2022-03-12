@@ -1,6 +1,7 @@
 package infrared
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"net"
@@ -305,15 +306,13 @@ func pipe(src, dst Conn) {
 		if err != nil {
 			return
 		}
-
 		//data := buffer[:n]
 
-		log.Println(pk.ID, pk.Data)
+		//log.Println("packet id: ", hex.EncodeToString([]byte{pk.ID}), "Entity id", hex.EncodeToString(pk.Data))
 
-		//pk, err := src.ReadPacket()
-		//if hex.EncodeToString([]byte{data[0]}) == "29" || hex.EncodeToString([]byte{data[0]}) == "2A" || hex.EncodeToString([]byte{data[0]}) == "2B" {
-		//	log.Println("packet id: ", hex.EncodeToString([]byte{data[0]}))
-		//}
+		if pk.ID == 0x1a {
+			log.Println("packet id: ", hex.EncodeToString([]byte{pk.ID}), "Entity id", hex.EncodeToString(pk.Data))
+		}
 
 		// TODO: This is where we need to add the logic to check for cheats.
 		cheat := false
