@@ -1,7 +1,6 @@
 package infrared
 
 import (
-	"encoding/hex"
 	"fmt"
 	"log"
 	"net"
@@ -297,29 +296,42 @@ func (proxy *Proxy) handleConn(conn Conn, connRemoteAddr net.Addr) error {
 	return nil
 }
 
+type ServerBoundPlayerPositionRotation struct {
+	x      protocol.Double
+	y      protocol.Double
+	z      protocol.Double
+	yaw    protocol.Float
+	pitch  protocol.Float
+	ground protocol.Boolean
+}
+
 func pipe(src, dst Conn) {
 	//buffer := make([]byte, 0xffff)
 
 	for {
 		//n, err := src.Read(buffer)
 		pk, err := src.ReadPacket()
+		cheat := false
+
 		if err != nil {
 			return
 		}
-		//data := buffer[:n]
-
-		//log.Println("packet id: ", hex.EncodeToString([]byte{pk.ID}), "Entity id", hex.EncodeToString(pk.Data))
-
-		if pk.ID == 0x1a {
-			log.Println("packet id: ", hex.EncodeToString([]byte{pk.ID}), "Entity id", hex.EncodeToString(pk.Data))
-		}
 
 		// TODO: This is where we need to add the logic to check for cheats.
-		cheat := false
 
-		//
+		if pk.ID == 0x12 {
+			player := ServerBoundPlayerPositionRotation{}
+			err := pk.Scan(&player.x, &player.y, &player.z, &player.yaw, &player.pitch, &player.ground)
+			if err != nil {
+				return
+			}
+
+			log.Println(player)
+			cheat = false
+		}
+
+		// TODO: instead of returning we should gracefully disconnect
 		if cheat {
-			// TODO: instead of returning we should gracefully disconnect
 			log.Println("Cheat detected. Disconnecting user...")
 			return
 		}
