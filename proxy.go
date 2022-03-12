@@ -297,17 +297,35 @@ func (proxy *Proxy) handleConn(conn Conn, connRemoteAddr net.Addr) error {
 }
 
 func pipe(src, dst Conn) {
-	buffer := make([]byte, 0xffff)
+	//buffer := make([]byte, 0xffff)
 
 	for {
-		n, err := src.Read(buffer)
+		//n, err := src.Read(buffer)
+		pk, err := src.ReadPacket()
 		if err != nil {
 			return
 		}
 
-		data := buffer[:n]
+		//data := buffer[:n]
 
-		_, err = dst.Write(data)
+		log.Println(pk.ID, pk.Data)
+
+		//pk, err := src.ReadPacket()
+		//if hex.EncodeToString([]byte{data[0]}) == "29" || hex.EncodeToString([]byte{data[0]}) == "2A" || hex.EncodeToString([]byte{data[0]}) == "2B" {
+		//	log.Println("packet id: ", hex.EncodeToString([]byte{data[0]}))
+		//}
+
+		// TODO: This is where we need to add the logic to check for cheats.
+		cheat := false
+
+		//
+		if cheat {
+			// TODO: instead of returning we should gracefully disconnect
+			log.Println("Cheat detected. Disconnecting user...")
+			return
+		}
+
+		err = dst.WritePacket(pk)
 		if err != nil {
 			return
 		}
