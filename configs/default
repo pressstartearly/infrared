@@ -1,0 +1,44 @@
+{
+  "domainName": "0.0.0.0",
+  "listenTo": ":25565",
+  "proxyTo": ":25569",
+  "proxyBind": "0.0.0.0",
+  "proxyProtocol": false,
+  "realIp": false,
+  "timeout": 1000,
+  "disconnectMessage": "Username: {{username}}\nNow: {{now}}\nRemoteAddress: {{remoteAddress}}\nLocalAddress: {{localAddress}}\nDomain: {{domain}}\nProxyTo: {{proxyTo}}\nListenTo: {{listenTo}}",
+  "onlineStatus": {
+    "versionName": "1.17.1",
+    "protocolNumber": 757,
+    "maxPlayers": 69,
+    "playersOnline": 2,
+    "playerSamples": [
+      {
+        "name": "Steve",
+        "uuid": "8667ba71-b85a-4004-af54-457a9734eed7"
+      },
+      {
+        "name": "Alex",
+        "uuid": "ec561538-f3fd-461d-aff5-086b22154bce"
+      }
+    ],
+    "motd": "This server is protected by M.A.C."
+  },
+  "offlineStatus": {
+    "versionName": "1.18",
+    "protocolNumber": 757,
+    "maxPlayers": 20,
+    "playersOnline": 0,
+    "motd": "Server is currently offline"
+  },
+  "callbackServer": {
+    "url": "https://mc.example.com/callback",
+    "events": [
+      "Error",
+      "PlayerJoin",
+      "PlayerLeave",
+      "ContainerStart",
+      "ContainerStop"
+    ]
+  }
+}
