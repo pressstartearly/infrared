@@ -307,6 +307,8 @@ type ServerBoundPlayerPositionRotation struct {
 
 func pipe(src, dst Conn) {
 	//buffer := make([]byte, 0xffff)
+	prevPacket := ServerBoundPlayerPositionRotation{}
+	isFlying := false
 
 	for {
 		//n, err := src.Read(buffer)
@@ -321,13 +323,32 @@ func pipe(src, dst Conn) {
 
 		if pk.ID == 0x12 {
 			player := ServerBoundPlayerPositionRotation{}
+
 			err := pk.Scan(&player.x, &player.y, &player.z, &player.yaw, &player.pitch, &player.ground)
 			if err != nil {
 				return
 			}
 
+			// TODO: Add exception for TP and respawning
+			if prevPacket.y != 0 {
+				// check for bad jump
+				deltaY := player.y - prevPacket.y
+				//deltaX := player.x - prevPacket.x
+				//deltaZ := player.z - prevPacket.z
+				if deltaY > 2 && !isFlying && !bool(player.ground) {
+					cheat = true
+				}
+				log.Println(deltaY)
+			}
+
+			log.Println(prevPacket)
 			log.Println(player)
-			cheat = false
+			prevPacket = player
+		}
+
+		// set player flying
+		if pk.ID == 0x18 {
+			isFlying = !isFlying
 		}
 
 		// TODO: instead of returning we should gracefully disconnect
