@@ -329,7 +329,6 @@ func pipe(src, dst Conn) {
 				return
 			}
 
-			// TODO: Add exception for TP and respawning
 			if prevPacket.y != 0 {
 				// check for bad jump
 				deltaY := player.y - prevPacket.y
@@ -338,7 +337,7 @@ func pipe(src, dst Conn) {
 				if deltaY > 2 && !isFlying && !bool(player.ground) {
 					cheat = true
 				}
-				log.Println(deltaY)
+				log.Println(deltaY, !bool(player.ground), !isFlying)
 			}
 
 			log.Println(prevPacket)
