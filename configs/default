@@ -8,8 +8,8 @@
   "timeout": 1000,
   "disconnectMessage": "Username: {{username}}\nNow: {{now}}\nRemoteAddress: {{remoteAddress}}\nLocalAddress: {{localAddress}}\nDomain: {{domain}}\nProxyTo: {{proxyTo}}\nListenTo: {{listenTo}}",
   "onlineStatus": {
-    "versionName": "1.17.1",
-    "protocolNumber": 757,
+    "versionName": "1.18.2",
+    "protocolNumber": 758,
     "maxPlayers": 69,
     "playersOnline": 2,
     "playerSamples": [
@@ -25,7 +25,7 @@
     "motd": "This server is protected by M.A.C."
   },
   "offlineStatus": {
-    "versionName": "1.18",
+    "versionName": "1.18.2",
     "protocolNumber": 757,
     "maxPlayers": 20,
     "playersOnline": 0,
