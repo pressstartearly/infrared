@@ -44,7 +44,7 @@ type movementPacket struct {
 	ground protocol.Boolean
 }
 
-type playerTracker struct {
+type PlayerTracker struct {
 	isFlying       bool
 	t              time.Time
 	cheat          string
@@ -52,8 +52,8 @@ type playerTracker struct {
 	onGround       float64
 }
 
-func NewPlayerTracker() playerTracker {
-	playerTracker := playerTracker{}
+func NewPlayerTracker() PlayerTracker {
+	playerTracker := PlayerTracker{}
 	playerTracker.isFlying = false
 	playerTracker.t = time.Now()
 	playerTracker.cheat = ""

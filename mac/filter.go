@@ -2,9 +2,13 @@ package mac
 
 import (
 	"github.com/haveachin/infrared/protocol"
+	"log"
 )
 
-func Filter(pk *protocol.Packet, tracker *playerTracker) string {
+func Filter(pk *protocol.Packet, tracker *PlayerTracker) string {
+	if pk.ID == 0x0F {
+		log.Println("ClientBound Packet Detected")
+	}
 	if pk.ID == 0x12 {
 		player := ServerBoundPlayerPositionRotation{}
 

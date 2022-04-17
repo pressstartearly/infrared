@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func movementCheck(player *movementPacket, tracker *playerTracker) string {
+func movementCheck(player *movementPacket, tracker *PlayerTracker) string {
 	if tracker.lastMovementPk.x != -1.1821173054061957e+116 { // make sure this isn't the original spawn packets
 		// Calculates deltas
 		deltaY := (player.y - tracker.lastMovementPk.y) / protocol.Double(time.Now().UnixMilli()-tracker.t.UnixMilli())
@@ -32,7 +32,7 @@ func movementCheck(player *movementPacket, tracker *playerTracker) string {
 	return tracker.cheat
 }
 
-func groundCheck(ground bool, tracker *playerTracker) {
+func groundCheck(ground bool, tracker *PlayerTracker) {
 	if ground && tracker.onGround <= 1000.0 {
 		tracker.onGround = 1000.0
 		tracker.isFlying = false

@@ -277,8 +277,13 @@ func (proxy *Proxy) handleConn(conn Conn, connRemoteAddr net.Addr) error {
 		connected = true
 	}
 
-	go pipe(rconn, conn)
-	pipe(conn, rconn)
+	// Created a new player tracker
+	playerTracker := mac.NewPlayerTracker()
+
+	// Creates both a connection to the server and one to the client.
+	// We set the player tracker to the same so we can track what's going both directions
+	go pipe(rconn, conn, &playerTracker)
+	pipe(conn, rconn, &playerTracker)
 
 	if connected {
 		proxy.logEvent(callback.PlayerLeaveEvent{
@@ -297,40 +302,7 @@ func (proxy *Proxy) handleConn(conn Conn, connRemoteAddr net.Addr) error {
 	return nil
 }
 
-type ServerBoundPlayerPositionRotation struct {
-	x      protocol.Double
-	y      protocol.Double
-	z      protocol.Double
-	yaw    protocol.Float
-	pitch  protocol.Float
-	ground protocol.Boolean
-}
-
-type ServerBoundPlayerRotation struct {
-	yaw    protocol.Float
-	pitch  protocol.Float
-	ground protocol.Boolean
-}
-
-type ServerBoundPlayerPosition struct {
-	x      protocol.Double
-	y      protocol.Double
-	z      protocol.Double
-	ground protocol.Boolean
-}
-
-type ServerBoundPlayerGround struct {
-	ground protocol.Boolean
-}
-
-type ServerBoundEntityAction struct {
-	entityid  protocol.VarInt
-	actionid  protocol.VarInt
-	jumpboost protocol.VarInt
-}
-
-func pipe(src, dst Conn) {
-	playerTracker := mac.NewPlayerTracker()
+func pipe(src, dst Conn, playerTracker *mac.PlayerTracker) {
 	for {
 		pk, err := src.ReadPacket()
 		if err != nil {
@@ -338,7 +310,7 @@ func pipe(src, dst Conn) {
 		}
 
 		// Check for cheats with M.A.C.
-		cheat := mac.Filter(&pk, &playerTracker)
+		cheat := mac.Filter(&pk, playerTracker)
 
 		// If returns an error or cheat disconnect the user with the error/cheat message.
 		if cheat != "" {
