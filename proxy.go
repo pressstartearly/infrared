@@ -2,8 +2,8 @@ package infrared
 
 import (
 	"fmt"
+	"github.com/haveachin/infrared/mac"
 	"log"
-	"math"
 	"net"
 	"strings"
 	"sync"
@@ -323,155 +323,30 @@ type ServerBoundPlayerGround struct {
 	ground protocol.Boolean
 }
 
+type ServerBoundEntityAction struct {
+	entityid  protocol.VarInt
+	actionid  protocol.VarInt
+	jumpboost protocol.VarInt
+}
+
 func pipe(src, dst Conn) {
-	//buffer := make([]byte, 0xffff)
-	isFlying := false
-	t := time.Now()
-	var cheat string
-	var lastTen []ServerBoundPlayerPositionRotation
-	var lastTenPos []ServerBoundPlayerPosition
-	onGround := 1000.0
-
 	for {
-		//n, err := src.Read(buffer)
 		pk, err := src.ReadPacket()
-
 		if err != nil {
 			return
 		}
 
-		// TODO: This is where we need to add the logic to check for cheats.
+		// Check for cheats with M.A.C.
+		cheat := mac.Filter(&pk)
 
-		if pk.ID == 0x12 {
-			player := ServerBoundPlayerPositionRotation{}
-
-			err := pk.Scan(&player.x, &player.y, &player.z, &player.yaw, &player.pitch, &player.ground)
-			if err != nil {
-				return
-			}
-
-			if len(lastTen) > 9 {
-				// check for bad jump
-				deltaY := (player.y - lastTen[0].y) / protocol.Double(time.Now().UnixMilli()-t.UnixMilli())
-				deltaX := math.Abs(float64(player.x-lastTen[0].x)) / float64(time.Now().UnixMilli()-t.UnixMilli())
-				deltaZ := math.Abs(float64(player.z-lastTen[0].z)) / float64(time.Now().UnixMilli()-t.UnixMilli())
-
-				// Checks for illegal jumping
-				if deltaY > 0.015 && !isFlying && !bool(player.ground) && onGround <= 0 {
-					cheat = "Detected Jumping Cheat."
-				}
-
-				//checks for any horizontal movement while not on ground within the past 10 packets
-				if player.ground && onGround <= 1000.0 {
-					onGround = 1000.0
-				} else if onGround <= 1000.0 || onGround >= 0 {
-					onGround = onGround - (float64(time.Now().UnixMilli() - t.UnixMilli()))
-				}
-				t = time.Now()
-				log.Println(onGround)
-				if onGround <= 0 && deltaY > 0 {
-					cheat = "Not been on ground enough to go up."
-				}
-
-				// Checks for illegal horizontal movement
-				if deltaX+deltaZ > 0.025 && deltaY >= 0.0 && !isFlying && !bool(player.ground) && onGround <= 0 {
-					cheat = "Detected horizontal movement cheat."
-				}
-				log.Println("Position and Rotation ", deltaX, deltaY, deltaZ, deltaX+deltaZ, !isFlying, !bool(player.ground), !bool(lastTen[0].ground))
-				lastTen = lastTen[1:] // pops array
-			}
-			lastTen = append(lastTen, player) // push to array
-		}
-
-		if pk.ID == 0x11 {
-			player := ServerBoundPlayerPosition{}
-
-			err := pk.Scan(&player.x, &player.y, &player.z, &player.ground)
-			if err != nil {
-				return
-			}
-
-			if len(lastTenPos) > 9 {
-				// check for bad jump
-				deltaY := (player.y - lastTenPos[0].y) / protocol.Double(time.Now().UnixMilli()-t.UnixMilli())
-				deltaX := math.Abs(float64(player.x-lastTenPos[0].x)) / float64(time.Now().UnixMilli()-t.UnixMilli())
-				deltaZ := math.Abs(float64(player.z-lastTenPos[0].z)) / float64(time.Now().UnixMilli()-t.UnixMilli())
-
-				// Checks for illegal jumping
-				if deltaY > 0.015 && !isFlying && !bool(player.ground) && onGround < 1 {
-					cheat = "Detected Jumping Cheat."
-				}
-
-				//checks for any horizontal movement while not on ground within the past 10 packets
-				if player.ground && onGround <= 1000.0 {
-					onGround = 1000.0
-				} else if onGround <= 1000.0 || onGround >= 0 {
-					onGround = onGround - (float64(time.Now().UnixMilli() - t.UnixMilli()))
-				}
-				t = time.Now()
-
-				log.Println(onGround)
-				if onGround <= 0 && deltaY > 0 {
-					cheat = "Not been on ground enough to go up."
-				}
-
-				// Checks for illegal horizontal movement
-				if deltaX+deltaZ > 0.025 && deltaY >= 0.0 && !isFlying && !bool(player.ground) && onGround <= 0 {
-					cheat = "Detected horizontal movement cheat."
-				}
-				log.Println("Player Position ", deltaX, deltaY, deltaZ, deltaX+deltaZ, !isFlying, !bool(player.ground), !bool(lastTenPos[0].ground))
-				lastTenPos = lastTenPos[1:] // pops array
-			}
-			lastTenPos = append(lastTenPos, player) // push to array
-		}
-
-		if pk.ID == 0x13 {
-
-			player := ServerBoundPlayerRotation{}
-
-			err := pk.Scan(&player.yaw, &player.pitch, &player.ground)
-			if err != nil {
-				return
-			}
-
-			if player.ground && onGround <= 1000.0 {
-				onGround = 1000.0
-			} else if onGround <= 1000.0 || onGround >= 0 {
-				onGround = onGround - (float64(time.Now().UnixMilli() - t.UnixMilli()))
-			}
-			t = time.Now()
-
-			log.Println("Player Rotation ", !bool(player.ground))
-
-		}
-
-		if pk.ID == 0x14 {
-
-			player := ServerBoundPlayerGround{}
-
-			err := pk.Scan(&player.ground)
-			if err != nil {
-				return
-			}
-
-			if player.ground && onGround <= 1000.0 {
-				onGround = 1000.0
-			} else if onGround <= 1000.0 || onGround >= 0 {
-				onGround = onGround - (float64(time.Now().UnixMilli() - t.UnixMilli()))
-			}
-			t = time.Now()
-			log.Println("Player Grounded ", !bool(player.ground))
-		}
-
-		// set player flying
-		if pk.ID == 0x18 {
-			isFlying = !isFlying
-		}
-
-		// TODO: instead of returning we should gracefully disconnect
+		// If returns an error or cheat disconnect the user with the error/cheat message.
 		if cheat != "" {
-			log.Println(cheat)
-			return
+			log.Println(cheat) // print the cheat message in the log for debugging
+			pk := protocol.Packet{ID: 0x1A, Data: protocol.Chat(fmt.Sprintf("{\n\t\"text\": \"-_-  You're a dirty dirty cheater  -_- \\n %s\",\n\t\"bold\": \"true\"\n}", cheat)).Encode()}
+			err = src.WritePacket(pk)
+			if err != nil {
+				return
+			}
 		}
 
 		err = dst.WritePacket(pk)
