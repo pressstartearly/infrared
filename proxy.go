@@ -330,6 +330,7 @@ type ServerBoundEntityAction struct {
 }
 
 func pipe(src, dst Conn) {
+	playerTracker := mac.NewPlayerTracker()
 	for {
 		pk, err := src.ReadPacket()
 		if err != nil {
@@ -337,7 +338,7 @@ func pipe(src, dst Conn) {
 		}
 
 		// Check for cheats with M.A.C.
-		cheat := mac.Filter(&pk)
+		cheat := mac.Filter(&pk, &playerTracker)
 
 		// If returns an error or cheat disconnect the user with the error/cheat message.
 		if cheat != "" {

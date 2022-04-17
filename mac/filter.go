@@ -2,16 +2,9 @@ package mac
 
 import (
 	"github.com/haveachin/infrared/protocol"
-	"time"
 )
 
-var isFlying = false
-var t = time.Now()
-var cheat string
-var lastMovementPk movementPacket
-var onGround float64 = 1000.0
-
-func Filter(pk *protocol.Packet) string {
+func Filter(pk *protocol.Packet, tracker *playerTracker) string {
 	if pk.ID == 0x12 {
 		player := ServerBoundPlayerPositionRotation{}
 
@@ -29,7 +22,7 @@ func Filter(pk *protocol.Packet) string {
 		}
 
 		// call filter
-		cheat = movementCheck(&mvpk, &onGround, &lastMovementPk)
+		tracker.cheat = movementCheck(&mvpk, tracker)
 
 	}
 
@@ -50,7 +43,7 @@ func Filter(pk *protocol.Packet) string {
 		}
 
 		// call filter
-		cheat = movementCheck(&mvpk, &onGround, &lastMovementPk)
+		tracker.cheat = movementCheck(&mvpk, tracker)
 
 	}
 
@@ -63,7 +56,7 @@ func Filter(pk *protocol.Packet) string {
 			return "Well this isn't supposed to happen. ¯\\_(ツ)_/¯"
 		}
 
-		groundCheck(bool(player.ground), &onGround)
+		groundCheck(bool(player.ground), tracker)
 
 	}
 
@@ -76,7 +69,7 @@ func Filter(pk *protocol.Packet) string {
 			return "Well this isn't supposed to happen. ¯\\_(ツ)_/¯"
 		}
 
-		groundCheck(bool(player.ground), &onGround)
+		groundCheck(bool(player.ground), tracker)
 	}
 
 	// set player flying
@@ -89,8 +82,8 @@ func Filter(pk *protocol.Packet) string {
 		}
 
 		if action.actionid == 8 {
-			isFlying = !isFlying
+			tracker.isFlying = !tracker.isFlying
 		}
 	}
-	return cheat
+	return tracker.cheat
 }
