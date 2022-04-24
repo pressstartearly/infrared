@@ -17,7 +17,7 @@ func movementCheck(player *movementPacket, tracker *PlayerTracker) string {
 		groundCheck(bool(player.ground), tracker)
 
 		// Checks for illegal vertical movements
-		if tracker.onGround <= 0 && deltaY > 0 && !tracker.isFlying {
+		if tracker.onGround <= 0 && deltaY > 0 && !tracker.isFlying && !bool(player.ground) {
 			tracker.cheat = "Detected vertical movement cheat."
 		}
 
@@ -26,7 +26,7 @@ func movementCheck(player *movementPacket, tracker *PlayerTracker) string {
 			tracker.cheat = "Detected horizontal movement cheat."
 		}
 
-		//log.Println("Position", deltaX, deltaY, deltaZ, deltaX+deltaZ, !isFlying, !bool(player.ground), !bool(lastMovementPk.ground))
+		//log.Println("Position", deltaX, deltaY, deltaZ, deltaX+deltaZ, !tracker.isFlying, !bool(player.ground), !bool(tracker.lastMovementPk.ground))
 	}
 	tracker.lastMovementPk = *player
 	return tracker.cheat

@@ -37,6 +37,32 @@ type ServerBoundEntityAction struct {
 	jumpboost protocol.VarInt
 }
 
+type ClientBoundEntityVelocity struct {
+	entityID protocol.VarInt
+	vx       protocol.Short
+	vy       protocol.Short
+	vz       protocol.Short
+}
+
+type ClientBoundEntityMetadata struct {
+	entityID  protocol.VarInt
+	index     protocol.UnsignedByte
+	valueType protocol.VarInt
+	value     protocol.VarInt
+}
+
+type ClientBoundParticle struct {
+	particleID   protocol.Int
+	longDistance protocol.Boolean
+	x            protocol.Double
+	y            protocol.Double
+	z            protocol.Double
+}
+
+type ClientBoundJoinGame struct {
+	entityID protocol.Int
+}
+
 type movementPacket struct {
 	x      protocol.Double
 	y      protocol.Double
@@ -46,10 +72,12 @@ type movementPacket struct {
 
 type PlayerTracker struct {
 	isFlying       bool
+	pose           int
 	t              time.Time
 	cheat          string
 	lastMovementPk movementPacket
 	onGround       float64
+	entityID       protocol.Int
 }
 
 func NewPlayerTracker() PlayerTracker {
